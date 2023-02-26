@@ -98,6 +98,11 @@ rem goto DownloadTauserTool_Done
 type nul>empty.sys
 fc empty.sys %windir%\TauserTool\Tauser_Tool.bat
 if %errorlevel%==0 goto Downlaod_TauserTool_wget_fail
+
+%windir%\TauserTool\wget\wget.exe https://raw.githubusercontent.com/FBW81C/TauserTool/main/Tauser_Updater.bat -O%windir%\TauserTool\Tauser_Updater.bat
+fc empty.sys %windir%\TauserTool\Tauser_Updater.bat
+if %errorlevel%==0 goto Downlaod_TauserTool_wget_fail
+
 del empty.sys
 goto DownloadTauserTool_Done
 
