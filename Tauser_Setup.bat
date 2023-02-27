@@ -21,12 +21,28 @@ echo %version%>%windir%\TauserTool\local_version.sys
 goto main
 
 :main
+if not exist %windir%\TauserTool\language.txt echo en>%windir%\TauserTool\language.txt
+if exist %windir%\TauserTool\language.txt set /p language=<%windir%\TauserTool\language.txt
+title Menu
 cls
-echo Here you can download or start TauserTool.
-echo 1) %main_downloadorstart% TauserTool
-echo 2) Update TauserTool
-echo 3) Settings
-echo 4) Exit TauserTool Setup
+
+if %language%==en echo Here you can download or start Tauser Tool.
+if %language%==en echo 1) %main_downloadorstart% Tauser Tool
+if %language%==en echo 2) Update Tauser Tool
+if %language%==en echo 3) Settings
+if %language%==en echo 4) Exit Tauser Tool Setup
+
+if %language%==de echo Hier kannst du Tauser Tool Herunterladen oder Öffnen. 
+if %language%==de echo 1) %main_downloadorstart% Tauser Tool
+if %language%==de echo 2) Update Tauser Tool
+if %language%==de echo 3) Einstellungen
+if %language%==de echo 4) Verlasse Tauser Tool Setup
+
+if %language%==fr echo Ici, vous pouvez télécharger ou démarrer Tauser Tool.
+if %language%==fr echo 1) %main_downloadorstart% Tauser Tool
+if %language%==fr echo 2) Update Tauser Tool
+if %language%==fr echo 3) Paramètres
+if %language%==fr echo 4) Sortie Tauser Tool Setup
 
 set /p opt=Option: 
 if %opt%==1 goto downloadorstart
@@ -43,6 +59,7 @@ goto StartTauserTool
 
 
 :DownloadTauserTool
+title Download Tauser Tool
 if not exist %windir%\TauserTool md %windir%\TauserTool
 rem add Test for Insallation path
 if not exist %windir%\TauserTool\wget goto test_wget
@@ -56,6 +73,7 @@ echo Download done!
 goto searchforTauserTool
 
 :test_wget
+title Wget Licence
 if not exist %windir%\TauserTool\wget md %windir%\TauserTool\wget
 cls
 echo By Continuing you accpet the Licence of wget!
@@ -75,6 +93,7 @@ bitsadmin /transfer "TauserTool-wget" /PRIORITY HIGH "https://cdn.discordapp.com
 goto test_wget
 
 :download_wget
+title Downloading...
 if exist %windir%\TauserTool\wget\wget.exe goto Downlaod_TauserTool_wget
 bitsadmin /transfer "TauserTool-wget" /PRIORITY HIGH "https://eternallybored.org/misc/wget/1.19.4/32/wget.exe" "%windir%\TauserTool\wget\wget.exe"
 if not exist %windir%\TauserTool\wget\wget.exe bitsadmin /transfer "TauserTool-wget" /PRIORITY HIGH "https://cdn.discordapp.com/attachments/744206114161295451/1079366391385305208/wget.exe" "%windir%\TauserTool\wget\wget.exe"
@@ -82,6 +101,7 @@ if not exist %windir%\TauserTool\wget\wget.exe goto download_wget_fail
 goto Downlaod_TauserTool_wget
 
 :download_wget_fail
+title Error
 cls
 echo There is no Inernetconnetion or the Servers are not avaibable
 echo Press any Key to retry
@@ -94,6 +114,7 @@ rem xcopy \\NAS_DS218\Test_2\Tauser_Updater.bat %windir%\TauserTool\
 rem goto DownloadTauserTool_Done
 
 :Downlaod_TauserTool_wget
+title Downloading
 %windir%\TauserTool\wget\wget.exe https://raw.githubusercontent.com/FBW81C/TauserTool/main/Tauser_Tool.bat -O%windir%\TauserTool\Tauser_Tool.bat
 type nul>empty.sys
 fc empty.sys %windir%\TauserTool\Tauser_Tool.bat
@@ -107,6 +128,7 @@ del empty.sys
 goto DownloadTauserTool_Done
 
 :Downlaod_TauserTool_wget_fail
+title Error
 del empty.sys
 cls
 echo Tauser Tool wasn't properly downloaded. Try agian.
@@ -115,6 +137,7 @@ exit
 
 
 :StartTauserTool
+title Starting...
 if not exist %windir%\TauserTool\setupstuff md %windir%\TauserTool\setupstuff
 if not exist %windir%\TauserTool\setupstuff\autoupdate_starting.txt echo 1 > %windir%\TauserTool\setupstuff\autoupdate_starting.txt
 set /p testonoroffautoupdate=<%windir%\TauserTool\setupstuff\autoupdate_starting.txt
@@ -128,6 +151,7 @@ exit
 
 
 :UpdateTauserTool
+title Update Tauser Tool
 if not exist %windir%\TauserTool goto UpdateTauserTool_fail
 call %windir%\TauserTool\Tauser_Updater.bat
 echo Done!
@@ -135,18 +159,21 @@ pause
 goto searchforTauserTool
 
 :UpdateTauserTool_fail
+title Error
 cls
 echo You must first install Tauser Tool before you can Update it.
 pause
 goto main
 
 :UpdateTauserTool_fail1
+title Error
 echo There is no available path for updating Tauser Tool.
 echo Hint: Check your Internet connection.
 pause
 goto main
 
 :startTauserTool1
+title Update and Start Tauser Tool
 call %windir%\TauserTool\Tauser_Updater.bat
 timeout 1 >NUL
 :startTauserTool2
@@ -160,6 +187,7 @@ start %windir%\TauserTool\Tauser_Tool.bat
 exit
 
 :Settings
+title Settings
 if not exist %windir%\TauserTool md %windir%\TauserTool
 if not exist %windir%\TauserTool\setupstuff md %windir%\TauserTool\setupstuff
 if not exist %windir%\TauserTool\setupstuff\autoupdate_starting.txt echo 1 > %windir%\TauserTool\setupstuff\autoupdate_starting.txt
@@ -176,7 +204,7 @@ set /p opt=Option:
 if %opt%==1 goto EnableorDisableAutoUpdate_Start
 if %opt%==2 goto Language_settings
 if %opt%==3 goto main
-echo This was no Option
+echo This is no Option
 pause
 goto Settings
 
@@ -202,7 +230,34 @@ goto Settings
 
 
 :Language_settings
+cls
+if not exist %windir%\TauserTool\language.txt echo en>%windir%\TauserTool\language.txt
+if exist %windir%\TauserTool\language.txt set /p language=<%windir%\TauserTool\language.txt
+title Language Settings
+echo Current Language: %language%
+echo 0) Back
+echo 1) English / Englisch     / Anglais
+echo 2) German  / Deutsch      / Allemand
+echo 3) French  / Französisch  / Français
 
+set /p opt=Option: 
+if %opt%==0 goto Settings
+if %opt%==1 goto set_en
+if %opt%==2 goto set_de
+if %opt%==3 goto set_fr
+echo This is not a option
+pause
+goto Language_settings
+
+:set_en
+echo en>%windir%\TauserTool\language.txt
+goto Language_settings
+:set_de
+echo de>%windir%\TauserTool\language.txt
+goto Language_settings
+:set_fr
+echo fr>%windir%\TauserTool\language.txt
+goto Language_settings
 
 
 
