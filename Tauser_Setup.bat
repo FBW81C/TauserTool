@@ -16,7 +16,8 @@ goto set_version
 
 :set_version
 if not exist %windir%\TauserTool md %windir%\TauserTool
-set version=6.0
+if exist %windir%\TauserTool\local_version.sys goto main
+set version=5.9
 echo %version%>%windir%\TauserTool\local_version.sys
 goto main
 
