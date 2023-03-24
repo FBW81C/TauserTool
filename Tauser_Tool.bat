@@ -1,8 +1,7 @@
 @echo off
 
-set version = 1.4
-
 :main
+if exist %windir%\TauserTool\language.txt set /p language=<%windir%\TauserTool\language.txt
 title Tauser Tool Menu
 color 0f
 cls
@@ -66,10 +65,10 @@ echo Here you can login (if you want to exit type: exit).
 set /p username_login=Username: 
 if %username_login%==exit goto main
 set /p code=Code: 
-if not exist %windir%\TauserTool\logindatastuff\users\%username_login%\name\%username_login%.txt goto faillogin
-if not exist %windir%\TauserTool\logindatastuff\users\%username_login%\key\%code%.txt goto faillogin
-set /p username2=<%windir%\TauserTool\logindatastuff\users\%username_login%\name\%username_login%.txt
-set /p code2=<%windir%\TauserTool\logindatastuff\users\%username_login%\key\%code%.txt
+if not exist %windir%\TauserTool\logindatastuff\users\%username_login%\name.txt goto faillogin
+if not exist %windir%\TauserTool\logindatastuff\users\%username_login%\key.txt goto faillogin
+set /p username2=<%windir%\TauserTool\logindatastuff\users\%username_login%\name.txt
+set /p code2=<%windir%\TauserTool\logindatastuff\users\%username_login%\key.txt
 if %username2%==%username_login% if %code2%==%code% goto Auswahl
 goto faillogin
 
@@ -104,10 +103,9 @@ goto signin
 
 
 :create_account
-md %windir%\TauserTool\logindatastuff\users\%username3%\name
-md %windir%\TauserTool\logindatastuff\users\%username3%\key
-echo %username3% > %windir%\TauserTool\logindatastuff\users\%username3%\name\%username3%.txt
-echo %code1% > %windir%\TauserTool\logindatastuff\users\%username3%\key\%code1%.txt
+md %windir%\TauserTool\logindatastuff\users\%username3%
+echo %username3% > %windir%\TauserTool\logindatastuff\users\%username3%\name.txt
+echo %code1% > %windir%\TauserTool\logindatastuff\users\%username3%\key.txt
 cls
 echo Account successfully created!
 pause
@@ -210,17 +208,9 @@ if %newusername%==exit goto account_settings
 if %newusername%==%username_login% goto Changeaccountname_notpossible
 set /p newusername_confirm=Confrim new username: 
 if not %newusername_confirm%==%newusername% goto Changeaccountname_notsame
-echo %newusername_confirm% > %windir%\TauserTool\logindatastuff\users\%username_login%\name\%username_login%.txt
-rename %windir%\TauserTool\logindatastuff\users\%username_login%\name\%username_login%.txt %newusername_confirm%.txt
-
-
-
-ren %windir%\TauserTool\logindatastuff\users\%username_login% %newusername_confirm%               <-- Zugriff Verweigert
-
-
-
-
-set /p username_login=<%windir%\TauserTool\logindatastuff\users\%newusername_confirm%\name\%newusername_confirm%.txt
+echo %newusername_confirm% > %windir%\TauserTool\logindatastuff\users\%username_login%\name.txt
+ren %windir%\TauserTool\logindatastuff\users\%username_login% %newusername_confirm%
+set /p username_login=<%windir%\TauserTool\logindatastuff\users\%newusername_confirm%\name.txt
 goto Changeaccountname_finish
 
 :Changeaccountname_notsame
@@ -252,13 +242,12 @@ set /p oldpassword=Current Password:
 if %oldpassword%==exit goto account_settings
 set /p newpassword=New Password:
 set /p newpassword_confirm=Confirm New Password:
-set /p code2=<%windir%\TauserTool\logindatastuff\users\%username_login%\key\%newpassword_confirm%
+set /p code2=<%windir%\TauserTool\logindatastuff\users\%username_login%\key.txt
 if %newpassword%==%code2% goto Changeaccountpassword_notpossible
 if not %newpassword%==%newpassword_confirm% goto Changeaccountpassword_notsame
 if not %oldpassword%==%code2% goto Changeaccountpassword_notsame
-echo %newpassword_confirm% > %windir%\TauserTool\logindatastuff\users\%username_login%\key\%oldpassword%.txt
-rename %windir%\TauserTool\logindatastuff\users\%username_login%\key\%oldpassword%.txt %newpassword_confirm%.txt
-set /p code2=<%windir%\TauserTool\logindatastuff\users\%username_login%\key\%newpassword_confirm%
+echo %newpassword_confirm% > %windir%\TauserTool\logindatastuff\users\%username_login%\key.txt
+set /p code2=<%windir%\TauserTool\logindatastuff\users\%username_login%\key.txt
 goto Changeaccountpassword_finish
 
 
@@ -288,10 +277,11 @@ cls
 echo Here you can delete your Account (if not type: exit)
 set /p current_password=Type your current Passsword: 
 if %current_password%==exit goto Auswahl
-if not exist %windir%\TauserTool\logindatastuff\users\%username_login%\key\%current_password%.txt goto deleteAccount_passwordnotsame
-set /p password_check=<%windir%\TauserTool\logindatastuff\users\%username_login%\key\%current_password%.txt
+if not exist %windir%\TauserTool\logindatastuff\users\%username_login%\key.txt goto deleteAccount_passwordnotsame
+set /p password_check=<%windir%\TauserTool\logindatastuff\users\%username_login%\key.txt
 if not %current_password%==%password_check% goto deleteAccount_passwordnotsame
 :deleteAccount_ask
+cls
 echo Are you sure to delete your Account? (yes=y/no=n)
 set /p opt=Option: 
 if %opt%==n goto Auswahl
