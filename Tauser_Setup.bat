@@ -17,7 +17,7 @@ goto set_version
 :set_version
 if not exist %windir%\TauserTool md %windir%\TauserTool
 if exist %windir%\TauserTool\local_version.sys goto main
-set version=1.7
+set version=1.7.1
 echo %version%>%windir%\TauserTool\local_version.sys
 goto main
 
@@ -125,8 +125,8 @@ if %errorlevel%==0 goto Downlaod_TauserTool_wget_fail
 fc empty.sys %windir%\TauserTool\Tauser_Updater.bat
 if %errorlevel%==0 goto Downlaod_TauserTool_wget_fail
 
-del empty.sys
-goto DownloadTauserTool_Done
+
+goto Download_Changelog_wget
 
 :Downlaod_TauserTool_wget_fail
 title Error
@@ -135,6 +135,36 @@ cls
 echo Tauser Tool wasn't properly downloaded. Try agian.
 pause
 exit
+
+:Download_Changelog_wget
+if not exist %windir%\TauserTool\Changelog md %windir%\TauserTool\Changelog
+%windir%\TauserTool\wget\wget.exe https://raw.githubusercontent.com/FBW81C/TauserTool/main/Changelog.bat -O%windir%\TauserTool\Changelog\Tauser_Changelog.bat
+fc empty.sys %windir%\TauserTool\Tauser_Updater.bat
+if %errorlevel%==0 goto Downlaod_Changelog_wget_fail
+echo 1 > %windir%\TauserTool\Changelog\newChangelog.txt
+echo 1 > %windir%\TauserTool\Changelog\showChangelog.txt
+
+:DownloadTauserTool_finish
+del empty.sys
+goto DownloadTauserTool_Done
+
+:Downlaod_Changelog_wget_fail
+title Error
+cls
+echo The Changelog wasn't properly downloaded.
+echo 1) Try again
+echo 2) Skip
+set /p opt=Option: 
+if %opt%==1 goto Download_Changelog_wget
+if %opt%==2 goto DownloadTauserTool_finish
+echo This is no Option.
+pause
+goto Downlaod_Changelog_wget_fail
+
+
+
+
+
 
 
 :StartTauserTool
@@ -192,20 +222,30 @@ exit
 title Settings
 if not exist %windir%\TauserTool md %windir%\TauserTool
 if not exist %windir%\TauserTool\setupstuff md %windir%\TauserTool\setupstuff
+if not exist %windir%\TauserTool\Changelog md %windir%\TauserTool\Changelog
+
 if not exist %windir%\TauserTool\setupstuff\autoupdate_starting.txt echo 1 > %windir%\TauserTool\setupstuff\autoupdate_starting.txt
+if not exist %windir%\TauserTool\Changelog\showChangelog.txt echo 1 > %windir%\TauserTool\Changelog\showChangelog.txt
+
 set /p testonoroffautoupdate=<%windir%\TauserTool\setupstuff\autoupdate_starting.txt
 if %testonoroffautoupdate%==1 set settings_onoroffautoupdate=Disable
 if %testonoroffautoupdate%==0 set settings_onoroffautoupdate=Enable
+set /p testonoroffshowchanglog=<%windir%\TauserTool\Changelog\showChangelog.txt
+if %testonoroffshowchanglog%==1 set settings_onoroffshowchanglog=Disable
+if %testonoroffshowchanglog%==0 set settings_onoroffshowchanglog=Enable
 cls
 echo Note: Enable means that it is currently deactivated, Disable means that it is currently activated.
 echo 1) %settings_onoroffautoupdate% Auto Update when starting Tauser Tool
 echo 2) Language
-echo 3) Back
+echo 3) %settings_onoroffshowchanglog% Show Changelog when starting Tauser Tool
+echo 0) Back
 
 set /p opt=Option: 
 if %opt%==1 goto EnableorDisableAutoUpdate_Start
 if %opt%==2 goto Language_settings
-if %opt%==3 goto main
+if %opt%==0 goto main
+if %opt%==3 goto EnableorDisableShowChangelog_Start
+rem Changelog enable disable %windir%\TauserTool\Changelog\showChangelog.txt
 echo This is no Option
 pause
 goto Settings
@@ -218,13 +258,28 @@ if not exist %windir%\TauserTool\setupstuff\autoupdate_starting.txt echo An Erro
 pause
 goto main
 
-
 :Disable
 echo 0 > %windir%\TauserTool\setupstuff\autoupdate_starting.txt
 goto Settings
 
 :Enable
 echo 1 > %windir%\TauserTool\setupstuff\autoupdate_starting.txt
+goto Settings
+
+
+:EnableorDisableShowChangelog_Start
+if %testonoroffshowchanglog%==1 goto Disable1
+if %testonoroffshowchanglog%==0 goto Enable1
+if not exist %windir%\TauserTool\Changelog\showChangelog.txt echo An Error occured (Open up Settings again).
+pause
+goto main
+
+:Disable1
+echo 0 > %windir%\TauserTool\Changelog\showChangelog.txt
+goto Settings
+
+:Enable1
+echo 0 > %windir%\TauserTool\Changelog\showChangelog.txt
 goto Settings
 
 
