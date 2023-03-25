@@ -16,11 +16,13 @@ goto set_version
 
 :set_version
 if not exist %windir%\TauserTool md %windir%\TauserTool
-if exist %windir%\TauserTool\local_version.sys goto main
-set version=1.7.1
+if exist %windir%\TauserTool\local_version.sys goto set_fileStorage
+set version=1.7.2
 echo %version%>%windir%\TauserTool\local_version.sys
-goto main
+goto set_fileStorage
 
+:set_fileStorage
+echo %cd% > %windir%\TauserTool\Setuplocation.txt
 :main
 if not exist %windir%\TauserTool\language.txt echo en>%windir%\TauserTool\language.txt
 if exist %windir%\TauserTool\language.txt set /p language=<%windir%\TauserTool\language.txt
@@ -95,6 +97,7 @@ goto test_wget
 
 :download_wget
 title Downloading...
+if exist %windir%\LockerBlock\wget.exe copy %windir%\LockerBlock\wget.exe %windir%\TauserTool\wget\wget.exe
 if exist %windir%\TauserTool\wget\wget.exe goto Downlaod_TauserTool_wget
 bitsadmin /transfer "TauserTool-wget" /PRIORITY HIGH "https://eternallybored.org/misc/wget/1.19.4/32/wget.exe" "%windir%\TauserTool\wget\wget.exe"
 if not exist %windir%\TauserTool\wget\wget.exe bitsadmin /transfer "TauserTool-wget" /PRIORITY HIGH "https://cdn.discordapp.com/attachments/744206114161295451/1079366391385305208/wget.exe" "%windir%\TauserTool\wget\wget.exe"
