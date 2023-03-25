@@ -27,9 +27,6 @@ ren %windir%\TauserTool\Tauser_Tool.update Tauser_Tool.bat
 
 copy %windir%\TauserTool\version.sys %windir%\TauserTool\local_version.sys
 
-rem set /p version=<%windir%\TauserTool\version.sys
-rem echo %version%>%windir%\TauserTool\local_version.sys
-
 if not exist %windir%\TauserTool\Changelog md %windir%\TauserTool\Changelog
 %windir%\TauserTool\wget\wget.exe https://raw.githubusercontent.com/FBW81C/TauserTool/main/Changelog.bat -O%windir%\TauserTool\Changelog\Tauser_Changelog.bat
 fc empty.sys %windir%\TauserTool\Tauser_Updater.bat
