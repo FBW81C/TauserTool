@@ -32,20 +32,24 @@ exit
 
 :test_update_setup
 if not exist %windir%\TauserTool\version.sys goto fail_update_setup1
-if not exist %windir%\TauserTool\local_version.sys
-fc %windir%\TauserTool\version.sys %windir%\TauserTool\local_version.sys goto fail_update_setup1
+if not exist %windir%\TauserTool\local_setup_version.sys goto set_local_setup_version
+rem if not exist %windir%\TauserTool\local_setup_version.sys goto fail_update_setup1
+fc %windir%\TauserTool\version.sys %windir%\TauserTool\local_setup_version.sys
 if not %errorlevel%==0 goto update_setup
 echo Your Setup is already on the newst version.
 pause
 goto main
 
 :update_setup
-wget.exe "https://raw.githubusercontent.com/FBW81C/TauserTool/main/Tauser_Setup.bat" -O%windir%\TauserTool\Tauser_Setup.update
+%windir%\TauserTool\wget\wget.exe https://raw.githubusercontent.com/FBW81C/TauserTool/main/Tauser_Setup.bat -O%windir%\TauserTool\Tauser_Setup.update
 type nul>empty.sys
 fc empty.sys %windir%\TauserTool\Tauser_Setup.update >NUL
 if %errorlevel%==0 goto fail_update_setup2
 copy %windir%\TauserTool\Tauser_Setup.update %setuplocation%\Tauser_Setup.bat
 del %windir%\TauserTool\Tauser_Setup.update
+
+copy %windir%\TauserTool\version.sys %windir%\TauserTool\local_setup_version.sys
+
 del empty.sys
 cls
 echo Successfully updated Tauser Setup!
@@ -54,7 +58,8 @@ goto main
 
 :fail_update_setup1
 cls
-echo An error occured. There is not "%windir%\TauserTool\version.sys" and "%windir%\TauserTool\local_version.sys"
+echo An error occured. There is not "%windir%\TauserTool\version.sys".
+echo Go to Setup and Press Update and error should be gone.
 pause
 goto main
 
@@ -64,6 +69,11 @@ cls
 echo An error occured. There is no Internetconnetion or the Servers are not ava
 pause
 goto main
+
+:set_local_setup_version
+copy %windir%\TauserTool\version.sys %windir%\TauserTool\local_setup_version.sys
+goto test_update_setup
+
 
 :testmd
 if exist %windir%\TauserTool\logindatastuff goto testusers
