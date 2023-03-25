@@ -34,7 +34,7 @@ if %language%==en echo 1) %main_downloadorstart% Tauser Tool
 if %language%==en echo 2) Update Tauser Tool
 if %language%==en echo 3) Settings
 if %language%==en echo 4) Exit Tauser Tool Setup
-
+rem Hi
 if %language%==de echo Hier kannst du Tauser Tool Herunterladen oder Öffnen. 
 if %language%==de echo 1) %main_downloadorstart% Tauser Tool
 if %language%==de echo 2) Update Tauser Tool
