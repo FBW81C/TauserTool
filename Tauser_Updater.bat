@@ -10,7 +10,7 @@ fc empty.sys %windir%\TauserTool\version.sys >NUL
 if %errorlevel%==0 goto fail
 
 rem Test version datei
-fc %windir%\TauserTool\version.sys %windir%\TauserTool\local_version.sys >NUL
+fc %windir%\TauserTool\version.sys %windir%\TauserTool\local_version.sys
 if not %errorlevel%==0 goto download_update
 echo You are already on the newest version.
 pause
@@ -25,8 +25,17 @@ del %windir%\TauserTool\Tauser_Tool_backup.bat
 ren %windir%\TauserTool\Tauser_Tool.bat Tauser_Tool_backup.bat
 ren %windir%\TauserTool\Tauser_Tool.update Tauser_Tool.bat
 
-set /p version=<%windir%\TauserTool\version.sys
-echo %version%>%windir%\TauserTool\local_version.sys
+copy %windir%\TauserTool\version.sys %windir%\TauserTool\local_version.sys
+
+rem set /p version=<%windir%\TauserTool\version.sys
+rem echo %version%>%windir%\TauserTool\local_version.sys
+
+if not exist %windir%\TauserTool\Changelog md %windir%\TauserTool\Changelog
+%windir%\TauserTool\wget\wget.exe https://raw.githubusercontent.com/FBW81C/TauserTool/main/Changelog.bat -O%windir%\TauserTool\Changelog\Tauser_Changelog.bat
+fc empty.sys %windir%\TauserTool\Tauser_Updater.bat
+if %errorlevel%==0 goto Downlaod_Changelog_wget_fail
+echo 1 > %windir%\TauserTool\Changelog\newChangelog.txt
+
 timeout 1 >nul
 goto finish
 
