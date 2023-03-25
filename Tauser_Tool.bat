@@ -3,12 +3,14 @@
 :showChangelog
 set showchangelog=0
 if exist %windir%\TauserTool\Changelog\showChangelog.txt set /p showchangelog=<%windir%\TauserTool\Changelog\showChangelog.txt
-if %showchangelog%==0 goto main
+if %showchangelog%==0 goto Test_Setuplocation
 set newchangelog=0
 if exist %windir%\TauserTool\Changelog\newChangelog.txt set /p newchangelog=<%windir%\TauserTool\Changelog\newChangelog.txt
 if %newchangelog%==1 call %windir%\TauserTool\Changelog\Tauser_Changelog.bat
 set 0 > %windir%\TauserTool\Changelog\newChangelog.txt
 
+:Test_Setuplocation
+set /p setuplocation=<%windir%\TauserTool\Setuplocation.txt
 
 :main
 if exist %windir%\TauserTool\language.txt set /p language=<%windir%\TauserTool\language.txt
@@ -19,15 +21,49 @@ echo Welcome at TauserTool, please choose an action.
 echo Made by FBW81C#8994 (fbw81c@protonmail.com)
 echo 1) Log In
 echo 2) Sign Up
-echo 3) Exit
+echo 3) Update Tauser Setup file
+echo 4) Exit
 
 set /p opt=Option: 
 if %opt%==1 goto testmd
 if %opt%==2 goto testmd1
+if %opt%==3 goto test_update_setup
 exit
 
+:test_update_setup
+if not exist %windir%\TauserTool\version.sys goto fail_update_setup1
+if not exist %windir%\TauserTool\local_version.sys
+fc %windir%\TauserTool\version.sys %windir%\TauserTool\local_version.sys goto fail_update_setup1
+if not %errorlevel%==0 goto update_setup
+echo Your Setup is already on the newst version.
+pause
+goto main
 
+:update_setup
+wget.exe "https://raw.githubusercontent.com/FBW81C/TauserTool/main/Tauser_Setup.bat" -O%windir%\TauserTool\Tauser_Setup.update
+type nul>empty.sys
+fc empty.sys %windir%\TauserTool\Tauser_Setup.update >NUL
+if %errorlevel%==0 goto fail_update_setup2
+copy %windir%\TauserTool\Tauser_Setup.update %setuplocation%\Tauser_Setup.bat
+del %windir%\TauserTool\Tauser_Setup.update
+del empty.sys
+cls
+echo Successfully updated Tauser Setup!
+pause
+goto main
 
+:fail_update_setup1
+cls
+echo An error occured. There is not "%windir%\TauserTool\version.sys" and "%windir%\TauserTool\local_version.sys"
+pause
+goto main
+
+:fail_update_setup2
+del empty.sys
+cls
+echo An error occured. There is no Internetconnetion or the Servers are not ava
+pause
+goto main
 
 :testmd
 if exist %windir%\TauserTool\logindatastuff goto testusers
@@ -142,11 +178,14 @@ goto signin
 if exist %windir%\TauserTool\logindatastuff\users\%username_login%\BackgroundColor\Color.txt goto importandsetColor
 goto Auswahl1
 :Auswahl1
+if exist %windir%\TauserTool\local_version.sys set /p %display_version%=<%windir%\TauserTool\local_version.sys
+if not exist %windir%\TauserTool\local_version.sys set %display_version%=N/A
 title Tauser Tool
 cls
-echo Willkommen, %username_login% bei Tauser Tool! Version 1.3 by Lukas
+echo Willkommen, %username_login% bei Tauser Tool! Version %display_version%
+echo Made by FBW81C
 echo 0) Logout
-echo 1) Account Settings (Requires administrator privileges)
+echo 1) Account Settings
 echo 2) Open cmd
 echo 3) Open Notepad
 echo 4) Backup Tool
