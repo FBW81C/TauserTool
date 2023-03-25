@@ -1,5 +1,15 @@
 @echo off
 
+:showChangelog
+set showchangelog=0
+if exist %windir%\TauserTool\Changelog\showChangelog.txt set /p showchangelog=<%windir%\TauserTool\Changelog\showChangelog.txt
+if %showchangelog%==0 goto main
+set newchangelog=0
+if exist %windir%\TauserTool\Changelog\newChangelog.txt set /p newchangelog=<%windir%\TauserTool\Changelog\newChangelog.txt
+if %newchangelog%==1 call %windir%\TauserTool\Changelog\Tauser_Changelog.bat
+set 0 > %windir%\TauserTool\Changelog\newChangelog.txt
+
+
 :main
 if exist %windir%\TauserTool\language.txt set /p language=<%windir%\TauserTool\language.txt
 title Tauser Tool Menu
