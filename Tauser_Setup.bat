@@ -17,7 +17,7 @@ goto set_version
 :set_version
 if not exist %windir%\TauserTool md %windir%\TauserTool
 if exist %windir%\TauserTool\local_version.sys goto set_fileStorage
-set version=1.7.2
+set version=1.7.3
 echo %version%>%windir%\TauserTool\local_version.sys
 goto set_fileStorage
 
