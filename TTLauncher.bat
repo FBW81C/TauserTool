@@ -99,7 +99,7 @@ echo Part 2: Networking (Bluetooth)
 echo Note: You need to pair a device in Windows before you can use it in Tauser Tool! (Someone from the Community should fix it! Because we have no idea how to)
 set /p opt=Would you like to use Bluetooth? (y/n): 
 if %opt%==y (
-echo True>%windir%\TauserTool\Services\bluetooth.sys
+type NUL>%windir%\TauserTool\Services\bluetooth.sys
 )
 if %opt%==y goto Setup_Question3
 if %opt%==n goto Setup_Question3
@@ -112,7 +112,7 @@ echo Part 3: Audio
 echo Note: If you're using Win11 you probably don't have any Audio in Tauser Tool. (Someone from the Community should also fix it!)
 set /p opt=Would you like to have Audio in Tauser Tool? (y/n): 
 if %opt%==y (
-echo True>%windir%\TauserTool\Services\audio.sys
+type NUL >%windir%\TauserTool\Services\audio.sys
 )
 if %opt%==y goto Setup_Question4
 if %opt%==n goto Setup_Question4
@@ -152,7 +152,7 @@ echo 3) No i don't want to setup Internt anymore!
 set /p opt=Option: 
 if %opt%==1 goto wifisetup
 if %opt%==2 (
-echo eth>%windir%\TauserTool\Services\lan.sys
+type NUL >%windir%\TauserTool\Services\lan.sys
 )
 if %opt%==2 goto Setup_Question2
 if %opt%==3 goto Setup_Question2
@@ -198,7 +198,7 @@ echo 0) Exit / Shutdown / Reboot
 echo 1) Start CMD
 echo 2) 7-Zip File Manager
 echo 3) Settings
-echo 4) Installed Programs
+echo 4) Install/ed Programs
 echo 5) Porti
 echo 9) Log off (Lock)
 set /p opt=Option: 
@@ -270,6 +270,11 @@ reg add HKLM\System\Setup /v SetupType /t REG_DWORD /d 2 /f
 shutdown /f /%Tauseroptions_rs% /t 0
 
 :lock
+if not exist %windir%\TauserTool\lockpw.sys (
+if %cls%==1 cls
+echo You have no Lock Password, create one!
+pause
+)
 if not exist %windir%\TauserTool\lockpw.sys goto settings_lock
 set /p lock_pw=<%windir%\TauserTool\lockpw.sys
 if %cls%==1 cls
@@ -291,9 +296,11 @@ echo Here you can change some stuff
 echo.
 echo 0) Back
 echo 1) Lock Password
+echo 2) Patch
 set /p opt=Option: 
 if %opt%==0 goto home
 if %opt%==1 goto settings_lock
+if %opt%==2 goto settings_patch
 set gobackfromopt=settings
 goto wrongopt
 
@@ -389,3 +396,43 @@ if %cls%==1 cls
 echo Password successfully deleted!
 pause
 goto settings_lock
+
+
+:settings_patch
+if %cls%==1 cls
+set bluetoothonoff=0
+set audioonoff=0
+set wifionoff=0
+set lanonoff=0
+set updateonoff=False
+set SSID=None
+if exist %windir%\TauserTool\Services\bluetooth.sys set bluetoothonoff=1
+if exist %windir%\TauserTool\Services\audio.sys set audioonoff=1
+if exist %windir%\TauserTool\Services\wifi.sys set wifionoff=1
+if exist %windir%\TauserTool\Services\wifi.sys set SSID=<%windir%\TauserTool\Services\wifi.sys
+if exist %windir%\TauserTool\Services\lan.sys set lanonoff=1
+set /p updateonoff=<%windir%\TauserTool\Services\updates.sys
+
+echo --- Patch ---
+echo Note: (X) = ON, ( ) = OFF
+echo 0) Back
+if %lanonoff%==1 echo 1) (X) Networking (Internet / Enthernet)
+if %lanonoff%==0 echo 1) ( ) Networking (Internet / Enthernet)
+
+if %wifionoff%==1 echo 2) (X) Networking (WiFi, SSID: %SSID%)
+if %wifionoff%==0 echo 2) ( ) Networking (WiFi, SSID: %SSID%)
+
+if %bluetoothonoff%==1 echo 3) (X) Networking (Bluetooth)
+if %bluetoothonoff%==0 echo 3) ( ) Networking (Bluetooth)
+
+if %audioonoff%==1 echo 4) (X) Audio
+if %audioonoff%==0 echo 4) ( ) Audio
+
+if %updateonoff%==True echo 5) Updating (Automatically)
+if %updateonoff%==Ask echo 5) Updating (Ask)
+if %updateonoff%==False echo 5) Updating (No)
+
+set /p opt=Option: 
+if %opt%==0 goto settings
+set gobackfromopt=settings_patch
+goto wrongopt
