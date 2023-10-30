@@ -1,6 +1,6 @@
 @echo off
 :reload
-set version=0.1
+set version=0.03
 set cls=1
 
 echo Tauser Tool Version %version%
@@ -89,7 +89,7 @@ goto wrongopt
 
 :wrongopt
 echo This is not an Option!
-echo To select an option, type the coresponding Letter and Hit Enter (y = yes / n = no).
+echo To select an option, type the coresponding Letter or number and Hit Enter (y = yes / n = no).
 pause
 goto %gobackfromopt%
 
@@ -99,7 +99,7 @@ echo Part 2: Networking (Bluetooth)
 echo Note: You need to pair a device in Windows before you can use it in Tauser Tool! (Someone from the Community should fix it! Because we have no idea how to)
 set /p opt=Would you like to use Bluetooth? (y/n): 
 if %opt%==y (
-type NUL>%windir%\TauserTool\Services\bluetooth.sys
+type NUL >%windir%\TauserTool\Services\bluetooth.sys
 )
 if %opt%==y goto Setup_Question3
 if %opt%==n goto Setup_Question3
@@ -150,6 +150,7 @@ echo 1) WiFi
 echo 2) Ethernet (LAN) or an USB-Tethering device
 echo 3) No i don't want to setup Internt anymore!
 set /p opt=Option: 
+if %opt%==1 set gobackto=Setup_Question2
 if %opt%==1 goto wifisetup
 if %opt%==2 (
 type NUL >%windir%\TauserTool\Services\lan.sys
@@ -168,7 +169,7 @@ echo.
 echo Please Enter the SSID (Name of the WiFi).
 set /p SSID=SSID: 
 echo %SSID%>%windir%\TauserTool\Services\wifi.sys
-goto Setup_Question2
+goto %gobackto%
 
 :Setup_Complete
 if %cls%==1 cls
@@ -434,5 +435,73 @@ if %updateonoff%==False echo 5) Updating (No)
 
 set /p opt=Option: 
 if %opt%==0 goto settings
+
+if %opt%==1 if %lanonoff%==1 (
+del %windir%\TauserTool\Services\lan.sys
+echo Restart your System to apply changes!
+pause
+)
+if %opt%==1 if %lanonoff%==0 (
+type NUL >%windir%\TauserTool\Services\lan.sys
+)
+if %opt%==1 goto settings_patch
+
+
+if %opt%==2 if not %SSID%==None (
+del %windir%\TauserTool\Services\wifi.sys
+echo Restart your System to apply changes!
+pause
+)
+if %opt%==2 if %SSID%==None set gobackto=backtopatchwifi
+if %opt%==2 if %SSID%==None goto wifisetup
+:backtopatchwifi
+if %opt%==2 goto settings_patch
+
+
+if %opt%==3 if %bluetoothonoff%==1 (
+del %windir%\TauserTool\Services\bluetooth.sys
+echo Restart your System to apply changes!
+pause
+)
+if %opt%==3 if %bluetoothonoff%==0 (
+type NUL >%windir%\TauserTool\Services\bluetooth.sys
+)
+if %opt%==3 goto settings_patch
+
+
+if %opt%==4 if %audioonoff%==1 (
+del %windir%\TauserTool\Services\audio.sys
+echo Restart your System to apply changes!
+pause
+)
+if %opt%==4 if %audioonoff%==0 (
+type NUL >%windir%\TauserTool\Services\audio.sys
+)
+if %opt%==4 goto settings_patch
+
+
+if %opt%==5 goto settings_patch_updating
 set gobackfromopt=settings_patch
+goto wrongopt
+
+:settings_patch_updating
+if %cls%==1 cls
+set /p updateonoff=<%windir%\TauserTool\Services\updates.sys
+echo Here you can change your updating preferences!
+if %updateonoff%==True echo Currently: Automatically
+if %updateonoff%==Ask echo Currently: Ask
+if %updateonoff%==False echo Currently: No
+echo 0) Back
+echo 1) Automatically
+echo 2) Ask
+echo 3) No
+set /p opt=Option: 
+if %opt%==0 goto settings_patch
+if %opt%==1 echo True>%windir%\TauserTool\Services\updates.sys
+if %opt%==1 goto settings_patch_updating
+if %opt%==2 echo Ask>%windir%\TauserTool\Services\updates.sys
+if %opt%==2 goto settings_patch_updating
+if %opt%==3 echo False>%windir%\TauserTool\Services\updates.sys
+if %opt%==3 goto settings_patch_updating
+set gobackfromopt=settings_patch_updating
 goto wrongopt
