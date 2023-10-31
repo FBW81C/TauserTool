@@ -436,50 +436,57 @@ if %updateonoff%==False echo 5) Updating (No)
 set /p opt=Option: 
 if %opt%==0 goto settings
 
+rem Lan make OFF
 if %opt%==1 if %lanonoff%==1 (
 del %windir%\TauserTool\Services\lan.sys
 echo Restart your System to apply changes!
 pause
 )
+rem Lan make ON
 if %opt%==1 if %lanonoff%==0 (
 type NUL >%windir%\TauserTool\Services\lan.sys
 )
 if %opt%==1 goto settings_patch
 
-
-if %opt%==2 if not %SSID%==None (
+rem HIER HAT ES EIN FEHLER ETWA WEGEN IF NOT, versuche die Klammer weg zu machen und dann vor
+rem jedes Statement zwei solche if abfragen zu machen
+rem Wifi make OFF
+if %opt%==2 if %wifionoff%==1 (
 del %windir%\TauserTool\Services\wifi.sys
 echo Restart your System to apply changes!
 pause
 )
-if %opt%==2 if %SSID%==None set gobackto=backtopatchwifi
-if %opt%==2 if %SSID%==None goto wifisetup
+rem wifi make ON
+if %opt%==2 if %wifionoff%==0 set gobackto=backtopatchwifi
+if %opt%==2 if %wifionoff%==0 goto wifisetup
 :backtopatchwifi
 if %opt%==2 goto settings_patch
 
-
+rem bluetooth make OFF
 if %opt%==3 if %bluetoothonoff%==1 (
 del %windir%\TauserTool\Services\bluetooth.sys
 echo Restart your System to apply changes!
 pause
 )
+rem bluetooth make ON
 if %opt%==3 if %bluetoothonoff%==0 (
 type NUL >%windir%\TauserTool\Services\bluetooth.sys
 )
 if %opt%==3 goto settings_patch
 
-
+rem Audio make OFF
 if %opt%==4 if %audioonoff%==1 (
 del %windir%\TauserTool\Services\audio.sys
 echo Restart your System to apply changes!
 pause
 )
+rem Audio make ON
 if %opt%==4 if %audioonoff%==0 (
 type NUL >%windir%\TauserTool\Services\audio.sys
 )
 if %opt%==4 goto settings_patch
 
-
+rem Updating
 if %opt%==5 goto settings_patch_updating
 set gobackfromopt=settings_patch
 goto wrongopt
@@ -497,10 +504,13 @@ echo 2) Ask
 echo 3) No
 set /p opt=Option: 
 if %opt%==0 goto settings_patch
+rem Make Updating Auto
 if %opt%==1 echo True>%windir%\TauserTool\Services\updates.sys
 if %opt%==1 goto settings_patch_updating
+rem Make Updating Ask
 if %opt%==2 echo Ask>%windir%\TauserTool\Services\updates.sys
 if %opt%==2 goto settings_patch_updating
+rem Make Updating OFF
 if %opt%==3 echo False>%windir%\TauserTool\Services\updates.sys
 if %opt%==3 goto settings_patch_updating
 set gobackfromopt=settings_patch_updating
