@@ -410,7 +410,7 @@ set SSID=None
 if exist %windir%\TauserTool\Services\bluetooth.sys set bluetoothonoff=1
 if exist %windir%\TauserTool\Services\audio.sys set audioonoff=1
 if exist %windir%\TauserTool\Services\wifi.sys set wifionoff=1
-if exist %windir%\TauserTool\Services\wifi.sys set SSID=<%windir%\TauserTool\Services\wifi.sys
+if exist %windir%\TauserTool\Services\wifi.sys set /p SSID=<%windir%\TauserTool\Services\wifi.sys
 if exist %windir%\TauserTool\Services\lan.sys set lanonoff=1
 set /p updateonoff=<%windir%\TauserTool\Services\updates.sys
 
@@ -439,50 +439,63 @@ if %opt%==0 goto settings
 rem Lan make OFF
 if %opt%==1 if %lanonoff%==1 (
 del %windir%\TauserTool\Services\lan.sys
-echo Restart your System to apply changes!
-pause
+start /min cmd /c net stop netman
+start /min cmd /c net stop dhcp
 )
 rem Lan make ON
 if %opt%==1 if %lanonoff%==0 (
 type NUL >%windir%\TauserTool\Services\lan.sys
+start /min cmd /c net start netman
+start /min cmd /c net start dhcp
 )
 if %opt%==1 goto settings_patch
 
-rem HIER HAT ES EIN FEHLER ETWA WEGEN IF NOT, versuche die Klammer weg zu machen und dann vor
-rem jedes Statement zwei solche if abfragen zu machen
-rem Wifi make OFF
+
+rem WiFi make OFF
 if %opt%==2 if %wifionoff%==1 (
 del %windir%\TauserTool\Services\wifi.sys
 echo Restart your System to apply changes!
 pause
 )
-rem wifi make ON
+rem WiFi make ON
 if %opt%==2 if %wifionoff%==0 set gobackto=backtopatchwifi
 if %opt%==2 if %wifionoff%==0 goto wifisetup
+if %opt%==2 if %wifionoff%==0 (
+start /min cmd /c net start netman
+start /min cmd /c net start dhcp
+start /min cmd /c net start wlansvc
+set /p SSID=<%windir%\TauserTool\Services\wifi.sys
+echo Connecting to %SSID% ...
+netsh wlan connect name="%SSID%"
+)
 :backtopatchwifi
 if %opt%==2 goto settings_patch
 
 rem bluetooth make OFF
 if %opt%==3 if %bluetoothonoff%==1 (
 del %windir%\TauserTool\Services\bluetooth.sys
-echo Restart your System to apply changes!
-pause
+start /min cmd /c net stop btagservice
+start /min cmd /c net stop bthavctpsvc
+start /min cmd /c net stop bthserv
 )
 rem bluetooth make ON
 if %opt%==3 if %bluetoothonoff%==0 (
 type NUL >%windir%\TauserTool\Services\bluetooth.sys
+start /min cmd /c net start btagservice
+start /min cmd /c net start bthavctpsvc
+start /min cmd /c net start bthserv
 )
 if %opt%==3 goto settings_patch
 
 rem Audio make OFF
 if %opt%==4 if %audioonoff%==1 (
 del %windir%\TauserTool\Services\audio.sys
-echo Restart your System to apply changes!
-pause
+start /min cmd /c net stop audiosrv
 )
 rem Audio make ON
 if %opt%==4 if %audioonoff%==0 (
 type NUL >%windir%\TauserTool\Services\audio.sys
+start /min cmd /c net start audiosrv
 )
 if %opt%==4 goto settings_patch
 
