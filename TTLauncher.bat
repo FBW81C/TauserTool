@@ -1,6 +1,6 @@
 @echo off
 :reload
-set version=0.03
+set version=0.1
 set cls=1
 
 echo Tauser Tool Version %version%
@@ -190,17 +190,38 @@ if exist %windir%\TauserTool\Updater\updateavailable.sys goto askforupdate
 rem make askforupdate
 
 :home
+if exist %windir%\TauserTool\Services\color.sys (
+set /p backgroundcolor=<%windir%\TauserTool\Services\color.sys
+color %backgroundcolor%
+if %errorlevel%==1 (
+echo Note: Your choosen back-/ foreground color isn't valid, it wil be deleted now!
+del %windir%\TauserTool\Services\color.sys /f /q
+)
+)
 if %cls%==1 cls
 echo Welcome to Tauser Tool!
 echo Version: %version%
 echo Made by FBW81C and JanGamesHD
 echo.
+
+net start | findstr /i wlansvc >NUL
+set errorcode=%errorlevel%
+if exist %windir%\TauserTool\Services\wifi.sys set /p SSID=<%windir%\TauserTool\Services\wifi.sys
+if not exist %windir%\TauserTool\Services\wifi.sys set SSID=<None
+if %errorcode%==0 echo WiFi: RUNNING (WiFi SSID: %SSID%)
+if %errorcode%==1 echo WiFi: OFF (enable in settings)
+rem echo Bluetooth:  RUNNING
+net start | findstr /i audiosrv >NUL
+set errorcode=%errorlevel%
+if %errorcode%==0 echo Audio:      RUNNING
+if %errorcode%==1 echo Audio:      OFF (enable in settings)
 echo 0) Exit / Shutdown / Reboot
 echo 1) Start CMD
 echo 2) 7-Zip File Manager
 echo 3) Settings
 echo 4) Install/ed Programs
-echo 5) Porti
+echo 5) Store
+echo 6) Porti
 echo 9) Log off (Lock)
 set /p opt=Option: 
 if %opt%==0 goto exit
@@ -209,7 +230,8 @@ if %opt%==1 goto home
 if %opt%==2 goto check7z
 if %opt%==3 goto settings
 if %opt%==4 goto applications
-if %opt%==5 goto launchPorti
+if %opt%==5 goto store
+if %opt%==6 goto launchPorti
 if %opt%==9 goto lock
 set gobackfromopt=home
 goto wrongopt
@@ -298,6 +320,7 @@ echo.
 echo 0) Back
 echo 1) Lock Password
 echo 2) Patch
+echo 3) Background
 set /p opt=Option: 
 if %opt%==0 goto home
 if %opt%==1 goto settings_lock
@@ -527,4 +550,138 @@ rem Make Updating OFF
 if %opt%==3 echo False>%windir%\TauserTool\Services\updates.sys
 if %opt%==3 goto settings_patch_updating
 set gobackfromopt=settings_patch_updating
+goto wrongopt
+
+
+:settings_background
+if %cls%==1 cls
+echo Here you can change your Background preferences (type "exit" to exit)!
+echo Note: If you choose the same colors for back- and foreground or colors that don't exist, nothing will it will stay the deaufalt way!
+color ?
+set /p opt=Option:
+if %opt%==exit goto settings
+echo %opt%>%windir%\TauserTool\Services\color.sys
+
+
+:store
+if %cls%==1 cls
+if not exist %windir%\TauserTool\Programs md %windir%\TauserTool\Programs
+echo Here you can start and download programs!
+echo.
+echo ------ Programs ------
+echo 0) Back
+if exist "%systemdrive%\Program Files\Mozilla Firefox\firefox.exe" echo 1) Start Firefox
+if not exist "%systemdrive%\Program Files\Mozilla Firefox\firefox.exe" echo 1) Download Firefox
+echo 2) Steam
+echo 3) Epic Games
+echo 4) Discord (32 Bit)
+echo 5) Discord (64 Bit)
+set /p opt=Option:
+if %opt%==0 goto home 
+set gobackfromopt=store
+goto wrongopt
+
+:firefox
+if exist "%systemdrive%\Program Files\Mozilla Firefox\firefox.exe" goto startfirefox
+if not exist "%systemdrive%\Program Files\Mozilla Firefox\firefox.exe" goto downloadfirefox
+goto mainmenu
+
+:startfirefox
+start cmd /c "%systemdrive%\Program Files\Mozilla Firefox\firefox.exe"
+goto home
+
+:downloadfirefox
+if not exist %windir%\TauserTool\WGET\wget.exe set gobackto=downloadfirefox
+if not exist %windir%\TauserTool\WGET\wget.exe goto getwget
+%windir%\TauserTool\WGET\wget.exe "Firefox Setup Download Link" -O%windir%\TauserTool\Programs\FirefoxSetup.exe
+start %windir%\TauserTool\Programs\FirefoxSetup.exe
+goto home
+
+
+
+:getwget
+if not exist %windir%\TauserTool\WGET md %windir%\TauserTool\WGET
+if %cls%==1 cls
+echo It looks like you havn't installed wget.exe (3rd Party Software to download things).
+echo How should we download wget.exe?
+echo.
+echo 1) Download wget.exe via bitsadmin (can take a while)
+echo 2) Download wget.exe via powershell (faster than bitsadmin)
+echo 3) No, now i don't want to download it anymore!
+set /p opt=Option: 
+if %opt%==1 goto getwget_ba
+if %opt%==2 goto getwget_ps
+if %opt%==3 goto home
+set gobackfromopt=getwget
+goto wrongopt
+
+:getwget_ps
+for /f "skip=3 tokens=1" %%a in ('powershell -command "$PSVersionTable.PSVersion"') do set Major=%%a
+if %Major% lss 3 (
+if %cls%==1 cls
+echo You can't download wget via PowerShell with your current PowerShell version.
+pause
+)
+if %Major% lss 3 goto getwget
+
+echo Trying to download wget.exe ...
+powershell Invoke-WebRequest https://eternallybored.org/misc/wget/1.19.4/32/wget.exe -OutFile %windir%\TauserTool\WGET\wget.exe
+if %errorlevel%==9009 bitsadmin /transfer "GetwgetTauserTool" /PRIORITY HIGH "https://eternallybored.org/misc/wget/1.19.4/32/wget.exe" %windir%\TauserTool\WGET\wget.exe
+if %errorlevel%==9009 goto getwget_ps_fail
+if exist %windir%\TauserTool\WGET\wget.exe goto checkwgethash
+echo We couldn't download wget.exe via PowerShell.
+set /p opt=Try agian (y/n): 
+if %opt%==y goto getwget_ps
+if %opt%==n goto getwget
+set gobackfromopt=getwget_ps
+goto wrongopt
+
+:getwget_ps_fail
+echo It looks like you are using and very old version of windows and/or you havn't installed the newest type of powershell!
+echo Please Donwload bitsadmin and/or update powershell!
+pause
+goto home
+
+
+:checkwgethash
+rem Fallback if goback is not defined
+if not defined %gobackto% set gobackto=home
+rem Generating MD5 Hash
+echo Generating MD5 Hash ...
+certutil -hashfile "%windir%\TauserTool\WGET\wget.exe" MD5 | findstr /V ":" >"%windir%\TauserTool\WGET\wgethash.sys"
+rem  Writing Original Hash to file...
+echo Writing Original Hash to file...
+echo 3dadb6e2ece9c4b3e1e322e617658b60 >%windir%\TauserTool\WGET\orginal_wgethash.sys
+fc %windir%\TauserTool\WGET\wgethash.sys %windir%\TauserTool\WGET\orginal_wgethash.sys
+if %errorlevel%==0 goto %gobackto%
+
+echo MD5-Hash verification failed!
+set /p remotehash=<%windir%\TauserTool\WGET\wgethash.sys
+echo Expected Hash: 3dadb6e2ece9c4b3e1e322e617658b60
+echo Returned Hash: %remotehash%
+
+:checkwgethash_ask
+echo Do you want to ignore and continue? (y/n/a (a = agian)) 
+set /p opt=Opt: 
+if %opt%==y goto %gobackto%
+if %opt%==n goto fail1
+if %opt%==a goto checkwgethash
+goto checkwgethash_ask
+
+:fail1
+if %cls%==1 cls
+echo The Hash isn't the same. This could mean that the Provider replaced or edited the file or the servers are offline or you have no internet connection!
+echo We will not continue downloading.
+pause
+goto home
+
+:getwget_ba
+bitsadmin /transfer "GetwgetTauserTool" /PRIORITY HIGH "https://eternallybored.org/misc/wget/1.19.4/32/wget.exe" %windir%\TauserTool\WGET\wget.exe
+if %errorlevel%==9009 goto getwget_ps_fail
+if exist %windir%\TauserTool\WGET\wget.exe goto checkwgethash
+echo We couldn't download wget.exe via bitsadmin.
+set /p opt=Try agian (y/n): 
+if %opt%==y goto getwget_ba
+if %opt%==n goto getwget
+set gobackfromopt=getwget_ba
 goto wrongopt
