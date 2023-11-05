@@ -204,17 +204,17 @@ echo Version: %version%
 echo Made by FBW81C and JanGamesHD
 echo.
 
-net start | findstr /i wlansvc >NUL
-set errorcode=%errorlevel%
-if exist %windir%\TauserTool\Services\wifi.sys set /p SSID=<%windir%\TauserTool\Services\wifi.sys
-if not exist %windir%\TauserTool\Services\wifi.sys set SSID=<None
-if %errorcode%==0 echo WiFi: RUNNING (WiFi SSID: %SSID%)
-if %errorcode%==1 echo WiFi: OFF (enable in settings)
+rem net start | findstr /i wlansvc >NUL
+rem set errorcode=%errorlevel%
+rem if exist %windir%\TauserTool\Services\wifi.sys set /p SSID=<%windir%\TauserTool\Services\wifi.sys
+rem if not exist %windir%\TauserTool\Services\wifi.sys set SSID=<None
+rem if %errorcode%==0 echo WiFi: RUNNING (WiFi SSID: %SSID%)
+rem if %errorcode%==1 echo WiFi: OFF (enable in settings)
 rem echo Bluetooth:  RUNNING
-net start | findstr /i audiosrv >NUL
-set errorcode=%errorlevel%
-if %errorcode%==0 echo Audio:      RUNNING
-if %errorcode%==1 echo Audio:      OFF (enable in settings)
+rem net start | findstr /i audiosrv >NUL
+rem set errorcode=%errorlevel%
+rem if %errorcode%==0 echo Audio:      RUNNING
+rem if %errorcode%==1 echo Audio:      OFF (enable in settings)
 echo 0) Exit / Shutdown / Reboot
 echo 1) Start CMD
 echo 2) 7-Zip File Manager
@@ -570,14 +570,15 @@ echo Here you can start and download programs!
 echo.
 echo ------ Programs ------
 echo 0) Back
-if exist "%systemdrive%\Program Files\Mozilla Firefox\firefox.exe" echo 1) Start Firefox
+if exist "%systemdrive%\Program Files\Mozilla Firefox\firefox.exe" echo 1) Start Mozilla Firefox
 if not exist "%systemdrive%\Program Files\Mozilla Firefox\firefox.exe" echo 1) Download Firefox
 echo 2) Steam
 echo 3) Epic Games
 echo 4) Discord (32 Bit)
 echo 5) Discord (64 Bit)
 set /p opt=Option:
-if %opt%==0 goto home 
+if %opt%==0 goto home
+if %opt%==1 goto firefox
 set gobackfromopt=store
 goto wrongopt
 
@@ -593,7 +594,7 @@ goto home
 :downloadfirefox
 if not exist %windir%\TauserTool\WGET\wget.exe set gobackto=downloadfirefox
 if not exist %windir%\TauserTool\WGET\wget.exe goto getwget
-%windir%\TauserTool\WGET\wget.exe "Firefox Setup Download Link" -O%windir%\TauserTool\Programs\FirefoxSetup.exe
+%windir%\TauserTool\WGET\wget.exe "https://download-installer.cdn.mozilla.net/pub/firefox/releases/99.0b8/win64/de/Firefox Setup 99.0b8.exe" -O%windir%\TauserTool\Programs\FirefoxSetup.exe
 start %windir%\TauserTool\Programs\FirefoxSetup.exe
 goto home
 
@@ -651,14 +652,14 @@ echo Generating MD5 Hash ...
 certutil -hashfile "%windir%\TauserTool\WGET\wget.exe" MD5 | findstr /V ":" >"%windir%\TauserTool\WGET\wgethash.sys"
 rem  Writing Original Hash to file...
 echo Writing Original Hash to file...
-echo 3dadb6e2ece9c4b3e1e322e617658b60 >%windir%\TauserTool\WGET\orginal_wgethash.sys
+echo 3dadb6e2ece9c4b3e1e322e617658b60>%windir%\TauserTool\WGET\orginal_wgethash.sys
 fc %windir%\TauserTool\WGET\wgethash.sys %windir%\TauserTool\WGET\orginal_wgethash.sys
 if %errorlevel%==0 goto %gobackto%
 
 echo MD5-Hash verification failed!
-set /p remotehash=<%windir%\TauserTool\WGET\wgethash.sys
+set /p remotehash_wget=<%windir%\TauserTool\WGET\wgethash.sys
 echo Expected Hash: 3dadb6e2ece9c4b3e1e322e617658b60
-echo Returned Hash: %remotehash%
+echo Returned Hash: %remotehash_wget%
 
 :checkwgethash_ask
 echo Do you want to ignore and continue? (y/n/a (a = agian)) 
