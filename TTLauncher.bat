@@ -177,6 +177,7 @@ echo The Setup is now complete!
 echo Press any key to reload
 pause>NUL
 echo %version% >%windir%\TauserTool\Setup.sys
+if not exist %windir%\TauserTool\temp md %windir%\TauserTool\temp
 goto reload
 
 :loadhome
@@ -221,7 +222,8 @@ echo 2) 7-Zip File Manager
 echo 3) Settings
 echo 4) Install/ed Programs
 echo 5) Store
-echo 6) Porti
+echo 6) Tools
+echo 7) Porti
 echo 9) Log off (Lock)
 set /p opt=Option: 
 if %opt%==0 goto exit
@@ -231,7 +233,8 @@ if %opt%==2 goto check7z
 if %opt%==3 goto settings
 if %opt%==4 goto applications
 if %opt%==5 goto store
-if %opt%==6 goto launchPorti
+if %opt%==6 goto tools
+if %opt%==7 goto launchPorti
 if %opt%==9 goto lock
 set gobackfromopt=home
 goto wrongopt
@@ -251,15 +254,15 @@ goto wrongopt
 
 :windowsoptions
 if %cls%==1 cls
+echo 0) Back
 echo 1) Reboot to Windows
 echo 2) Shutdown to Windows
-echo 3) Back
 set /p opt=Option: 
+if %opt%==0 goto exit
 if %opt%==1 set Tauseroptions_rs=r
 if %opt%==2 set Tauseroptions_rs=s
 if %opt%==1 goto rswin
 if %opt%==2 goto rswin
-if %opt%==3 goto exit
 set gobackfromopt=windowsoptions
 goto wrongopt
 
@@ -273,15 +276,15 @@ goto shutdownscreen
 
 :Tauseroptions
 if %cls%==1 cls
+echo 0) Back
 echo 1) Reboot to Tauser Tool
 echo 2) Shutdown to Tauser Tool
-echo 3) Back
 set /p opt=Option: 
+if %opt%==0 goto exit
 if %opt%==1 set Tauseroptions_rs=r
 if %opt%==2 set Tauseroptions_rs=s
 if %opt%==1 goto rstau
 if %opt%==2 goto rstau
-if %opt%==3 goto exit
 set gobackfromopt=Tauseroptions
 goto wrongopt
 
@@ -558,10 +561,10 @@ if %cls%==1 cls
 echo Here you can change your Background preferences (type "exit" to exit)!
 echo Note: If you choose the same colors for back- and foreground or colors that don't exist, nothing will it will stay the deaufalt way!
 color ?
-set /p opt=Option:
+set /p opt=Option (only type the two hex values):
 if %opt%==exit goto settings
 echo %opt%>%windir%\TauserTool\Services\color.sys
-
+goto settings
 
 :store
 if %cls%==1 cls
@@ -600,13 +603,61 @@ goto home
 
 
 
+:getwget_accept
+if %cls%==1
+echo It looks like you havn't accepted the wget.exe licence...
+echo Please accept the licence...
+echo 1) Accept
+echo 2) Decline
+echo 3) Download Licene to %systemdrive%\wget_licence.txt (via PowerShell)
+set /p opt=Option: 
+if %opt%==1 type NUL >%windir%\TauserTool\WGET\accepted.sys
+if %opt%==1 goto getwget
+if %opt%==2 (
+echo We can't continue if you don't accept the licence!
+echo Come back Later!
+pause
+)
+if %opt%==2 goto home
+
+if %opt%==3 goto (
+for /f "skip=3 tokens=1" %%a in ('powershell -command "$PSVersionTable.PSVersion"') do set Major=%%a
+if %Major% lss 3 (
+if %cls%==1 cls
+echo You can't download the wget.exe licence via PowerShell with your current PowerShell version.
+pause
+)
+if %Major% lss 3 goto getwget_accept
+powershell Invoke-WebRequest https://cdn.discordapp.com/attachments/744206114161295451/1079358436308947084/COPYING_WGET -OutFile %systemdrive%\wget_licence.txt
+if exist %systemdrive%\wget_licence.txt (
+echo Succesfully downloaded wget.exe licence!
+pause
+) 
+)
+if %opt%==3 if exist %systemdrive%\wget_licence.txt goto getwget_accept
+if %opt%==3 if not exist %systemdrive%\wget_licence.txt goto getwget_accept_fail
+
+set gobackfromopt=getwget_accept
+goto wrongopt
+
+:getwget_accept_fail
+echo We couldn't download wget.exe licnece via PowerShell.
+set /p opt=Try agian (y/n (n = return to home)): 
+if %opt%==y goto getwget_accept
+if %opt%==n goto home
+set gobackfromopt=getwget_accept_fail
+goto wrongopt
+
+
+
 :getwget
 if not exist %windir%\TauserTool\WGET md %windir%\TauserTool\WGET
+if not exist %windir%\TauserTool\WGET\accepted.sys goto getwget_accept
 if %cls%==1 cls
 echo It looks like you havn't installed wget.exe (3rd Party Software to download things).
 echo How should we download wget.exe?
 echo.
-echo 1) Download wget.exe via bitsadmin (can take a while)
+echo 1) Download wget.exe via bitsadmin (can take a while and will probaly not work in Tauser Tool)
 echo 2) Download wget.exe via powershell (faster than bitsadmin)
 echo 3) No, now i don't want to download it anymore!
 set /p opt=Option: 
@@ -620,7 +671,7 @@ goto wrongopt
 for /f "skip=3 tokens=1" %%a in ('powershell -command "$PSVersionTable.PSVersion"') do set Major=%%a
 if %Major% lss 3 (
 if %cls%==1 cls
-echo You can't download wget via PowerShell with your current PowerShell version.
+echo You can't download wget.exe via PowerShell with your current PowerShell version.
 pause
 )
 if %Major% lss 3 goto getwget
@@ -645,8 +696,7 @@ goto home
 
 
 :checkwgethash
-rem Fallback if goback is not defined
-if not defined %gobackto% set gobackto=home
+rem Fallback if goback is not defined maybay here
 rem Generating MD5 Hash
 echo Generating MD5 Hash ...
 certutil -hashfile "%windir%\TauserTool\WGET\wget.exe" MD5 | findstr /V ":" >"%windir%\TauserTool\WGET\wgethash.sys"
@@ -686,3 +736,140 @@ if %opt%==y goto getwget_ba
 if %opt%==n goto getwget
 set gobackfromopt=getwget_ba
 goto wrongopt
+
+
+:tools
+if %cls%==1 cls
+echo ------ Tools ------
+echo.
+echo 0) Back
+echo 1) Installer
+echo 2) Uninstaller
+echo 3) Change Volume
+echo 4) Change Brightness
+echo 5) Use Goto-Value
+echo 6) Force-Close Program
+set /p opt=Option: 
+if %opt%==0 goto home
+if %opt%==1 goto tools_installer
+if %opt%==2 goto tools_uninstaller
+if %opt%==3 start sndvol
+set gobackfromopt=tools
+goto wrongopt
+
+
+:tools_installer
+if %cls%==1 cls
+echo ------ Installer ------
+echo.
+echo Here you can download files. Expamples .exe, .bat, .msi ... or just .txt
+echo You can Copy and Paste the download link here, enter "exit" to exit
+echo.
+set /p downloadlink=Download Link: 
+if %downloadlink%==exit goto tools
+echo Choose Where you want it to be stored, enter "exit" to exit
+echo Example: C:\MyFile.exe (absolute filepath)
+echo.
+set /p filename=Save to: 
+if %filename%==exit goto tools
+
+:tools_installer_ask
+if %cls%==1 cls
+echo ------ Installer ------
+echo.
+echo Only dowload stuff you know!
+echo Downloadlink: %downloadlink%
+echo Safe File to: %filename%
+echo.
+echo 0) Back
+echo 1) Download via bitsadmin (slow, will probably not work in Tauer Tool)
+echo 2) Download via PowerShell (faster than bitsadmin)
+echo 3) Download via wget.exe (3rd Party Software, fastest)
+set /p opt=Option: 
+if %opt%==0 goto tools_installer
+if %opt%==1 goto tools_installer_dowload_ba
+if %opt%==2 goto tools_installer_dowload_ps
+if %opt%==3 goto tools_installer_dowload_wg
+set gobackfromopt=tools_installer
+goto wrongopt
+
+:tools_installer_dowload_ba
+bitsadmin /transfer "TauserToolInstallTool" /PRIORITY HIGH "%downloadlink%" "%filename%"
+set errorcode=%errorlevel%
+if %errorcode%==9009 (
+echo bitsadmin could not download the file because your are using a old Windows version and bitsadmin is not installed!
+pause
+)
+if %errorcode%==9009 goto tools_installer_ask
+if not exist "%filename%" set gobacktodownload=tools_installer_dowload_ba
+if not exist "%filename%" goto tools_installer_dowload_noexist
+goto tools_installer_dowload_checkhash
+
+:tools_installer_dowload_ps
+for /f "skip=3 tokens=1" %%a in ('powershell -command "$PSVersionTable.PSVersion"') do set Major=%%a
+if %Major% lss 3 (
+if %cls%==1 cls
+echo You can't download via PowerShell with your current PowerShell version.
+pause
+)
+if %Major% lss 3 goto tools_installer_ask
+powershell Invoke-WebRequest "%downloadlink%" -OutFile "%filename%"
+if not exist "%filename%" set gobacktodownload=tools_installer_dowload_ps
+if not exist "%filename%" goto tools_installer_dowload_noexist
+goto tools_installer_dowload_checkhash
+
+:tools_installer_dowload_wg
+if not exist %windir%\TauserTool\WGET\wget.exe set gobackto=tools_installer_dowload_wg
+if not exist %windir%\TauserTool\WGET\wget.exe goto getwget
+%windir%\TauserTool\WGET\wget.exe "%downloadlink%" -O"%filename%"
+if not exist "%filename%" set gobacktodownload=tools_installer_dowload_wg
+if not exist "%filename%" goto tools_installer_dowload_noexist
+goto tools_installer_dowload_checkhash
+
+:tools_installer_dowload_noexist
+if %cls%==1 cls
+echo %downloadlink% could not be safed to:
+echo %filename%
+echo Do you want to try again? (y/n)
+set /p opt=Option: 
+if %opt%==y goto %gobacktodownload%
+if %opt%==n goto tools_installer_ask
+set gobackfromopt=tools_installer_dowload_noexist
+goto wrongopt
+
+:tools_installer_dowload_checkhash
+if not exist %windir%\TauserTool\temp md %windir%\TauserTool\temp
+echo Hashing file for security reasons ...
+echo Generating MD5 Hash ...
+certutil -hashfile "%filename%" MD5 | findstr /V ":" >"%windir%\TauserTool\temp\md5hash.sys"
+
+if %cls%==1 cls
+echo MD5-Hash verification!
+set /p returnedhash=<%windir%\TauserTool\temp\md5hash.sys
+echo Is that your expected MD5 Hash?
+echo Returned Hash: %returnedhash%
+echo 1) Yes, execute file
+echo 2) Yes, go back
+echo 3) No, but execute file
+echo 4) No, delete file and go back
+set /p opt=Option: 
+if %opt%==1 goto tools_installer_executeit
+if %opt%==2 goto tools
+if %opt%==3 goto tools_installer_executeit
+if %opt%==4 goto tools_installer_deleteit
+set gobackfromopt=tools_installer_dowload_checkhash
+goto wrongopt
+
+:tools_installer_executeit
+echo Executing %filename% ...
+start /min cmd /c "%filename%"
+echo Done!
+pause
+goto home
+
+:tools_installer_deleteit
+echo Deleting %filename% ...
+del "%filename%" /f /q
+echo file Successfully deleted!
+pause
+goto tools
