@@ -604,7 +604,7 @@ goto home
 
 
 :getwget_accept
-if %cls%==1
+if %cls%==1 cls
 echo It looks like you havn't accepted the wget.exe licence...
 echo Please accept the licence...
 echo 1) Accept
@@ -620,9 +620,8 @@ pause
 )
 if %opt%==2 goto home
 
-if %opt%==3 goto (
-for /f "skip=3 tokens=1" %%a in ('powershell -command "$PSVersionTable.PSVersion"') do set Major=%%a
-if %Major% lss 3 (
+if %opt%==3 for /f "skip=3 tokens=1" %%a in ('powershell -command "$PSVersionTable.PSVersion"') do set Major=%%a
+if %opt%==3 if %Major% lss 3 (
 if %cls%==1 cls
 echo You can't download the wget.exe licence via PowerShell with your current PowerShell version.
 pause
@@ -632,7 +631,6 @@ powershell Invoke-WebRequest https://cdn.discordapp.com/attachments/744206114161
 if exist %systemdrive%\wget_licence.txt (
 echo Succesfully downloaded wget.exe licence!
 pause
-) 
 )
 if %opt%==3 if exist %systemdrive%\wget_licence.txt goto getwget_accept
 if %opt%==3 if not exist %systemdrive%\wget_licence.txt goto getwget_accept_fail
@@ -871,5 +869,30 @@ goto home
 echo Deleting %filename% ...
 del "%filename%" /f /q
 echo file Successfully deleted!
+pause
+goto tools
+
+
+:tools_uninstaller
+if %cls%==1 cls
+echo --- Program List Start ---
+wmic product get name
+echo --- ¨Program List End ---
+echo Copy and Paste the name of the Program you want to uninstall.
+set /p programname=Program: 
+cls
+echo Are you sure you want to uninstall "%programname%" ? (y/n)
+set /p opt=Opt: 
+if %opt%==y goto tools_uninstaller_uninstall
+if %opt%==n goto tools
+set gobackfromopt=tools_uninstaller
+goto wrongopt
+
+:tools_uninstaller_uninstall
+cls
+echo Uninstalling: "%programname%" ...
+wmic product where name="%programname%" call uninstall
+set errorcode=%errorlevel%
+echo Process wmic.exe exited with Errorlevel %errorcode% ...
 pause
 goto tools
