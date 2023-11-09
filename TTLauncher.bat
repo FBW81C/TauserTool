@@ -34,7 +34,11 @@ rem
 echo Loading Settings
 if not exist %windir%\TauserTool md %windir%\TauserTool
 if not exist %windir%\TauserTool\Services md %windir%\TauserTool\Services
+if not exist %windir%\TauserTool\temp md %windir%\TauserTool\temp
 if not exist %windir%\TauserTool\Setup.sys goto Setup
+rem Optional
+if not exist %windir%\TauserTool\Services\updates.sys echo False>%windir%\TauserTool\Services\updates.sys
+rem Optional
 if exist %windir%\TauserTool\preload.bat call %windir%\TauserTool\preload.bat
 rem Starts wifi
 if exist %windir%\TauserTool\Services\wifi.sys (
@@ -73,9 +77,13 @@ echo Most applications work out of the Box (like Steam Games).
 echo Minecraft does NOT work out of the Box however you can use Porti (from JanGamesHD).
 echo You can download Porti from the Startmenu to play it!!!
 echo.
+echo To select an option: Type the coresponding letter or number and hit ENTER
+echo Note: y = yes, n = no
+echo.
 echo Pls Subscribe on YouTube (FBW81C)
 echo And watch the Tutorial.
 pause
+
 :Setup_Question1
 if %cls%==1 cls
 echo Now you can configurate Tauser Tool!
@@ -174,10 +182,22 @@ goto %gobackto%
 :Setup_Complete
 if %cls%==1 cls
 echo The Setup is now complete!
+if exist %windir%\TauserTool\Services\lan.sys echo LAN:       ON 
+if not exist %windir%\TauserTool\Services\lan.sys echo LAN:       OFF
+if exist %windir%\TauserTool\Services\wifi.sys (
+set /p SSID=<%windir%\TauserTool\Services\wifi.sys
+echo WiFi:      ON (SSID: %SSID%)
+)
+if not exist %windir%\TauserTool\Services\wifi.sys echo WiFi:      OFF (SSID: None)
+if exist %windir%\TauserTool\Services\audio.sys echo Audio:     ON
+if not exist %windir%\TauserTool\Services\audio.sys echo Audio:     OFF
+if exist %windir%\TauserTool\Services\bluetooth.sys echo Bluetooth: ON
+if not exist %windir%\TauserTool\Services\bluetooth.sys echo Bluetooth: OFF
+echo.
+echo You can change your preferences in the settings!
 echo Press any key to reload
 pause>NUL
 echo %version% >%windir%\TauserTool\Setup.sys
-if not exist %windir%\TauserTool\temp md %windir%\TauserTool\temp
 goto reload
 
 :loadhome
@@ -220,7 +240,7 @@ echo 0) Exit / Shutdown / Reboot
 echo 1) Start CMD
 echo 2) 7-Zip File Manager
 echo 3) Settings
-echo 4) Install/ed Programs
+echo 4) Installed Programs
 echo 5) Store
 echo 6) Tools
 echo 7) Porti
@@ -242,13 +262,13 @@ goto wrongopt
 :exit
 if %cls%==1 cls
 echo Here you can exit Tauser Tool
+echo 0) Back
 echo 1) Shutdown / Reboot to Windows
 echo 2) Shutdown / Reboot to Tauser Tool
-echo 3) Back
 set /p opt=Option: 
+if %opt%==0 goto home
 if %opt%==1 goto windowsoptions
 if %opt%==2 goto Tauseroptions
-if %opt%==3 goto home
 set gobackfromopt=exit
 goto wrongopt
 
@@ -295,6 +315,13 @@ reg add HKLM\System\Setup /v OOBEInProgress /t REG_DWORD /d 1 /f
 reg add HKLM\System\Setup /v SetupType /t REG_DWORD /d 2 /f
 shutdown /f /%Tauseroptions_rs% /t 0
 
+:shutdownscreen
+if %cls%==1 cls
+echo Here comes a placeholder
+echo Here you should see an animation, but i have not idea what kind of animation...
+timeout 1>NUL
+goto shutdownscreen
+
 :lock
 if not exist %windir%\TauserTool\lockpw.sys (
 if %cls%==1 cls
@@ -316,18 +343,25 @@ echo The Password is not correct! Try again.
 pause
 goto lock
 
+
+:check7z
+echo Not finished
+echo Redirecting to settings...
+pause
+
 :settings
 if %cls%==1 cls
 echo Here you can change some stuff
 echo.
 echo 0) Back
 echo 1) Lock Password
-echo 2) Patch
+echo 2) Patch / Service preferences
 echo 3) Background
 set /p opt=Option: 
 if %opt%==0 goto home
 if %opt%==1 goto settings_lock
 if %opt%==2 goto settings_patch
+if %opt%==3 goto settings_background
 set gobackfromopt=settings
 goto wrongopt
 
@@ -744,14 +778,21 @@ echo 0) Back
 echo 1) Installer
 echo 2) Uninstaller
 echo 3) Change Volume
-echo 4) Change Brightness
-echo 5) Use Goto-Value
-echo 6) Force-Close Program
+echo 4) Sound Settings
+echo 5) Change Brightness
+echo 6) Use Goto-Value (EXPERIENCED USERS ONLY!)
+echo 7) Force-Close Program
+echo 8) Windows-Build-In Tools
 set /p opt=Option: 
 if %opt%==0 goto home
 if %opt%==1 goto tools_installer
 if %opt%==2 goto tools_uninstaller
 if %opt%==3 start sndvol
+if %opt%==4 start rundll32 shell32.dll,Control_RunDLL mmsys.cpl,,sounds
+if %opt%==5 goto tools_changebrightness
+if %opt%==6 goto tools_goto
+if %opt%==7 goto tools_forceclose
+if %opt%==8 goto tools_buildin
 set gobackfromopt=tools
 goto wrongopt
 
@@ -896,3 +937,105 @@ set errorcode=%errorlevel%
 echo Process wmic.exe exited with Errorlevel %errorcode% ...
 pause
 goto tools
+
+:tools_changebrightness
+for /f "skip=3 tokens=1" %%a in ('powershell -command "$PSVersionTable.PSVersion"') do set Major=%%a
+if %Major% lss 3 (
+if %cls%==1 cls
+echo You can't change your Display Brightenss via PowerShell with your current PowerShell version, maybay i will add support in the near future...
+pause
+)
+if %Major% lss 3 goto tools
+if %cls%==1 cls
+echo Enter the percentage of the Display Brightness (1-100).
+rem for /f "tokens=2 delims==" %%a in ('powershell -Command "Get-CimInstance -Namespace root/WMI -ClassName WmiMonitorBrightness | findstr CurrentBrightness"') do set curbrightness=%%a
+rem for /f "tokens=2 delims==" %%a in ('powershell -Command "Get-CimInstance -Namespace root/WMI -ClassName WmiMonitorBrightness | findstr InstanceName"') do set monitorname=%%a
+rem echo Current Brightness: %curbrightness%
+rem echo Screen Name: %monitorname%
+set /p opt=Option: 
+if %opt% LSS 1 if %opt% GTR 100 goto tools_changebrightness_fail
+echo Changing Brightness...
+powershell (Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1,%opt%)
+echo Succesfully changed Display Brightenss to %opt%
+goto tools
+
+:tools_changebrightness_fail
+if %cls%==1 cls
+echo %opt% is not a valid value
+echo Enter a value between 1 and 100
+pause
+goto tools_changebrightness
+
+
+:tools_goto
+if %cls%==1 cls
+echo --- Goto-Value ---
+echo NOTE: THIS OPTION IS FOR EXPERIENCED USERS ONLY!
+echo       IF YOU ENTER A WRONG VALUE, IT CAN CRASH YOUR SYSTEM!
+echo Enter "home" or "tools" to go back!
+echo.
+set /p opt=Value: 
+set /p opt1=Are you sure (yes/n) (n = back): 
+if %opt1%==yes goto %opt%
+if %opt1%==n goto tools
+set gobackfromopt=tools_goto
+goto wrongopt
+
+:tools_forceclose
+if %cls%==1 cls
+tasklist
+echo Enter the corresponding Process Name.
+echo Enter "exit" to exit
+set /p opt=Process Name: 
+if %opt%==exit goto tools
+WMIC PROCESS WHERE Name="%opt%" CALL Terminate
+echo Exited with Errorlevel %errorlevel%
+taskkill /F /IM %opt%
+echo Exited with Errorlevel: %errorlevel%
+pause
+goto tools
+
+:tools_buildin
+if %cls%==1 cls
+echo ----- Windows-Build-In Tools -----
+echo.
+echo 0) Back
+echo 1) Paint
+echo 2) WordPad
+echo 3) Calculator
+echo 4) Snipping Tool
+echo 5) Color Manager
+echo 6) Control Panel
+echo 7) Device Manager
+echo 8) Disk Management 
+echo 9) Optional Features 
+echo 10) Malware Removal Tool
+echo 11) Create Windows Recovery Media 
+set /p opt=Option: 
+if %opt%==0 goto tools
+if %opt%==1 start mspaint.exe
+if %opt%==2 start write.exe
+if %opt%==3 start calc.exe
+if %opt%==4 start SnippingTool.exe
+if %opt%==5 start colorcpl.exe
+if %opt%==6 start control.exe
+if %opt%==7 start devmgmt.exe
+if %opt%==8 start diskmgmt.msc
+if %opt%==9 start OptionalFeatures.exe
+if %opt%==10 start mrt.exe
+if %opt%==11 start recdisc.exe
+if %opt%==1 goto home
+if %opt%==2 goto home
+if %opt%==3 goto home
+if %opt%==4 goto home
+if %opt%==5 goto home
+if %opt%==6 goto home
+if %opt%==7 goto home
+if %opt%==8 goto home
+if %opt%==9 goto home
+if %opt%==10 goto home
+if %opt%==10 goto home
+set gobackfromopt=tools_buildin
+goto wrongopt
+rem Cedb1549 bewertet diesen Code mit 9.5 von 10 Punkten :D
+rem Er weis zwar nicht was der Code macht aber er bewertet es trozdem...
