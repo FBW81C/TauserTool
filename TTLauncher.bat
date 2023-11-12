@@ -1,6 +1,6 @@
 @echo off
 :reload
-set version=0.1
+set version=0.2
 set cls=1
 
 echo Tauser Tool Version %version%
@@ -224,18 +224,9 @@ echo Welcome to Tauser Tool!
 echo Version: %version%
 echo Made by FBW81C and JanGamesHD
 echo.
-
-rem net start | findstr /i wlansvc >NUL
-rem set errorcode=%errorlevel%
-rem if exist %windir%\TauserTool\Services\wifi.sys set /p SSID=<%windir%\TauserTool\Services\wifi.sys
-rem if not exist %windir%\TauserTool\Services\wifi.sys set SSID=<None
-rem if %errorcode%==0 echo WiFi: RUNNING (WiFi SSID: %SSID%)
-rem if %errorcode%==1 echo WiFi: OFF (enable in settings)
-rem echo Bluetooth:  RUNNING
-rem net start | findstr /i audiosrv >NUL
-rem set errorcode=%errorlevel%
-rem if %errorcode%==0 echo Audio:      RUNNING
-rem if %errorcode%==1 echo Audio:      OFF (enable in settings)
+goto home_show
+:home_show2
+echo.
 echo 0) Exit / Shutdown / Reboot
 echo 1) Start CMD
 echo 2) 7-Zip File Manager
@@ -258,6 +249,28 @@ if %opt%==7 goto launchPorti
 if %opt%==9 goto lock
 set gobackfromopt=home
 goto wrongopt
+
+:home_show
+sc query netman | findstr "RUNNING" >NUL
+set errorcode=%errorlevel%
+if %errorcode%==0 echo LAN: ON
+if %errorcode%==1 echo LAN: OFF
+
+sc query wlansvc | findstr "RUNNING" >NUL
+set errorcode=%errorlevel%
+if %errorcode%==0 echo WiFi: ON
+if %errorcode%==1 echo WiFi: OFF
+
+sc query bthserv | findstr "RUNNING" >NUL
+set errorcode=%errorlevel%
+if %errorcode%==0 echo Bluetooth: ON
+if %errorcode%==1 echo Bluetooth: OFF
+
+sc query audiosrv | findsstr "RUNNING" >NUL
+set errorcode=%errorlevel%
+if %errorcode%==0 echo Audio: ON
+if %errorcode%==1 echo Audio: OFF
+goto home_show2
 
 :exit
 if %cls%==1 cls
@@ -777,22 +790,24 @@ echo.
 echo 0) Back
 echo 1) Installer
 echo 2) Uninstaller
-echo 3) Change Volume
-echo 4) Sound Settings
-echo 5) Change Brightness
-echo 6) Use Goto-Value (EXPERIENCED USERS ONLY!)
-echo 7) Force-Close Program
-echo 8) Windows-Build-In Tools
+echo 3) Calculator
+echo 4) Change Volume
+echo 5) Sound Settings
+echo 6) Change Brightness
+echo 7) Use Goto-Value (EXPERIENCED USERS ONLY!)
+echo 8) Force-Close Program
+echo 9) Windows-Build-In Tools
 set /p opt=Option: 
 if %opt%==0 goto home
 if %opt%==1 goto tools_installer
 if %opt%==2 goto tools_uninstaller
-if %opt%==3 start sndvol
-if %opt%==4 start rundll32 shell32.dll,Control_RunDLL mmsys.cpl,,sounds
-if %opt%==5 goto tools_changebrightness
-if %opt%==6 goto tools_goto
-if %opt%==7 goto tools_forceclose
-if %opt%==8 goto tools_buildin
+if %opt%==3 goto tools_calculator
+if %opt%==4 start sndvol
+if %opt%==5 start rundll32 shell32.dll,Control_RunDLL mmsys.cpl,,sounds
+if %opt%==6 goto tools_changebrightness
+if %opt%==7 goto tools_goto
+if %opt%==8 goto tools_forceclose
+if %opt%==9 goto tools_buildin
 set gobackfromopt=tools
 goto wrongopt
 
@@ -1009,7 +1024,6 @@ echo 6) Control Panel
 echo 7) Device Manager
 echo 8) Disk Management 
 echo 9) Optional Features 
-echo 10) Malware Removal Tool
 echo 11) Create Windows Recovery Media 
 set /p opt=Option: 
 if %opt%==0 goto tools
@@ -1019,10 +1033,9 @@ if %opt%==3 start calc.exe
 if %opt%==4 start SnippingTool.exe
 if %opt%==5 start colorcpl.exe
 if %opt%==6 start control.exe
-if %opt%==7 start devmgmt.exe
+if %opt%==7 start devmgmt
 if %opt%==8 start diskmgmt.msc
 if %opt%==9 start OptionalFeatures.exe
-if %opt%==10 start mrt.exe
 if %opt%==11 start recdisc.exe
 if %opt%==1 goto home
 if %opt%==2 goto home
@@ -1033,9 +1046,58 @@ if %opt%==6 goto home
 if %opt%==7 goto home
 if %opt%==8 goto home
 if %opt%==9 goto home
-if %opt%==10 goto home
-if %opt%==10 goto home
+if %opt%==11 goto home
 set gobackfromopt=tools_buildin
 goto wrongopt
+
+:tools_calculator
+if %cls%==1 cls
+echo ---- Calculator ----
+echo.
+echo Here you can do arithmetic stuff
+echo 1) Normal
+echo 2) Science
+echo 3) Programmer (Converter)
+set /p opt=Option: 
+if %opt%==1 goto tools_calculator_normal
+if %opt%==3 goto tools_calculator_programmer
+set gobackfromopt=tools_calculator
+goto wrongopt
+
+:tools_calculator_normal
+if %cls%==1 cls
+echo Enter "exit" to exit.
+set /p num1=Number 1: 
+set /p num2=Number 2: 
+set /p operation=Operation (+, -, *, /): 
+if %num1%==exit goto tools_calculator
+if %num2%==exit goto tools_calculator
+set /a result=%num1%%operation%%num2%
+if %errorlevel%==1073750991 echo %operator% is not an valid operator!
+echo Resulte: %result%
+pause
+goto tools_calculator_normal
+
+:tools_calculator_programmer
+if %cls%==1 cls
+echo Enter "exit" to exit
+set /p num1=Number to Convert: 
+echo 1) DEC to BIN
+echo 2) BIN to DEC
+if %opt%==0 goto tools_calculator
+if %opt%==1 goto tools_calculator_programmer_DECBIN
+
+:tools_calculator_programmer_DECBIN
+echo Converting...
+set /a odd=%num1%%2
+if %odd%==1 set /a num1-=1
+if %odd%==1 echo 1>>%windir%\TauserTool\temp\calculator.sys
+set /a num1=num1/2
+if %num1% goto tools_calculator_programmer_finish
+goto tools_calculator_programmer_DECBIN
+
+:tools_calculator_programmer_finish
+type %windir%\TauserTool\temp\calculator.sys
+pause
 rem Cedb1549 bewertet diesen Code mit 9.5 von 10 Punkten :D
 rem Er weis zwar nicht was der Code macht aber er bewertet es trozdem...
