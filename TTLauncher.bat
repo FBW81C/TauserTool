@@ -2,6 +2,7 @@
 :reload
 set version=0.2
 set cls=1
+echo %version%>%windir%\TauserTool\local_version.sys
 
 echo Tauser Tool Version %version%
 echo Made by FBW81C and JanGamesHD
@@ -203,11 +204,9 @@ goto reload
 :loadhome
 if %cls%==1 cls
 if exist %windir%\TauserTool\Services\updates.sys set /p updatesetting=<%windir%\TauserTool\Services\updates.sys
-if exist %windir%\TauserTool\Services\updates.sys (
-if %updatesetting%==True start /min cmd /c %windir%\TauserTool\Updater.bat
-if %updatesetting%==Ask start /min cmd /c %windir%\TauserTool\Updater.bat
-)
-if exist %windir%\TauserTool\Updater\updateavailable.sys goto askforupdate
+if not exist %windir%\TauserTool\Services\updates.sys set updatesetting=False
+if %updatesetting%==True call %windir%\TauserTool\TTUpdater.bat
+if exist %windir%\TauserTool\Updater\updateavailable.sys if %updatesetting%==Ask goto askforupdate
 rem make askforupdate
 
 :home
@@ -266,7 +265,7 @@ set errorcode=%errorlevel%
 if %errorcode%==0 echo Bluetooth: ON
 if %errorcode%==1 echo Bluetooth: OFF
 
-sc query audiosrv | findsstr "RUNNING" >NUL
+sc query audiosrv | findstr "RUNNING" >NUL
 set errorcode=%errorlevel%
 if %errorcode%==0 echo Audio: ON
 if %errorcode%==1 echo Audio: OFF
@@ -1049,55 +1048,5 @@ if %opt%==9 goto home
 if %opt%==11 goto home
 set gobackfromopt=tools_buildin
 goto wrongopt
-
-:tools_calculator
-if %cls%==1 cls
-echo ---- Calculator ----
-echo.
-echo Here you can do arithmetic stuff
-echo 1) Normal
-echo 2) Science
-echo 3) Programmer (Converter)
-set /p opt=Option: 
-if %opt%==1 goto tools_calculator_normal
-if %opt%==3 goto tools_calculator_programmer
-set gobackfromopt=tools_calculator
-goto wrongopt
-
-:tools_calculator_normal
-if %cls%==1 cls
-echo Enter "exit" to exit.
-set /p num1=Number 1: 
-set /p num2=Number 2: 
-set /p operation=Operation (+, -, *, /): 
-if %num1%==exit goto tools_calculator
-if %num2%==exit goto tools_calculator
-set /a result=%num1%%operation%%num2%
-if %errorlevel%==1073750991 echo %operator% is not an valid operator!
-echo Resulte: %result%
-pause
-goto tools_calculator_normal
-
-:tools_calculator_programmer
-if %cls%==1 cls
-echo Enter "exit" to exit
-set /p num1=Number to Convert: 
-echo 1) DEC to BIN
-echo 2) BIN to DEC
-if %opt%==0 goto tools_calculator
-if %opt%==1 goto tools_calculator_programmer_DECBIN
-
-:tools_calculator_programmer_DECBIN
-echo Converting...
-set /a odd=%num1%%2
-if %odd%==1 set /a num1-=1
-if %odd%==1 echo 1>>%windir%\TauserTool\temp\calculator.sys
-set /a num1=num1/2
-if %num1% goto tools_calculator_programmer_finish
-goto tools_calculator_programmer_DECBIN
-
-:tools_calculator_programmer_finish
-type %windir%\TauserTool\temp\calculator.sys
-pause
 rem Cedb1549 bewertet diesen Code mit 9.5 von 10 Punkten :D
 rem Er weis zwar nicht was der Code macht aber er bewertet es trozdem...
