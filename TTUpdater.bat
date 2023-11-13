@@ -33,19 +33,28 @@ echo Downloading Original Hash to...
 type nul>%windir%\TauserTool\temp\empty.sys
 fc %windir%\TauserTool\temp\empty.sys %windir%\TauserTool\WGET\orginal_TTLauncherhash.sys >NUL
 if %errorlevel%==0 goto fail
+
 rem Check if hash is same
-fc %windir%\TauserTool\temp\TTLauncherhash.sys %windir%\TauserTool\WGET\orginal_TTLauncherhash.sys
-if %errorlevel%==0 goto afterhash
-
-
 set /p orginal=<%windir%\TauserTool\WGET\orginal_TTLauncherhash.sys
 set /p current=<%windir%\TauserTool\temp\TTLauncherhash.sys
 
+if %orginal%==%current% goto afterhash
+
 echo MD5-Hash verification failed!
+echo This could mean that the file was not downloaded correctly
 echo Expected hash: %orginal%
 echo Returned hash: %current%
-set /p opt=Retry (y/n): 
-if %opt%==n goto restorelastversion
+echo 1) Retry
+echo 2) Restore
+echo 3) Restore and write version to file
+echo 4) View content of file
+set /p opt=Option:  
+if %opt%==2 goto restorelastversion
+if %opt%==3 echo copy %windir%\TauserTool\version.sys %windir%\TauserTool\local_version.sys /y
+if %opt%==3 goto restorelastversion
+if %opt%==2 goto restorelastversion
+if %opt%==4 notepad %windir%\TauserTool\TTLauncher.update
+if %opt%==4 pause
 goto updatemain
 
 :restorelastversion
